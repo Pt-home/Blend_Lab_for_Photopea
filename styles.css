@@ -166,15 +166,15 @@ label.file-btn:has(+ input:focus-visible){
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 
-/* Export-to-Photopea action (requested color) */
+/* Export-to-Photopea action (full panel width) */
 .btn-export-pp{
   background:#00a592;
   color:#fff;
-  border-color:#008a7d; 
+  border-color:#008a7d;
   display:block;
   width:100%;
   box-sizing:border-box;
-  align-items:center;
+  grid-column: 1 / -1;
 }
 .btn-export-pp:hover{ filter:brightness(1.06); }
 .btn-export-pp:active{ transform:translateY(1px); }
