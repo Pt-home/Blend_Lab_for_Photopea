@@ -160,9 +160,18 @@ label.file-btn:has(+ input:focus-visible){
   outline-offset:2px;
 }
 
-/* назва обраного файлу під кнопкою */
 .filename{
   margin-top:6px;
   color:var(--muted);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
+
+/* Export-to-Photopea action (requested color) */
+.btn-export-pp{
+  background:#00a592;
+  color:#fff;
+  border-color:#008a7d; /* subtle border to match the tone */
+}
+.btn-export-pp:hover{ filter:brightness(1.06); }
+.btn-export-pp:active{ transform:translateY(1px); }
+
