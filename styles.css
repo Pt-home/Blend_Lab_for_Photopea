@@ -1,0 +1,168 @@
+:root{
+  --panelW: 25vw; /* updated from JS */
+
+  --bg:#0f1115; --bg2:#161a22; --fg:#d9e1ff; --muted:#8a94b0;
+  --brand:#6aa3ff; --accent:#4ad6b8;
+  --red:#ff6a6a; --green:#6aff8a; --blue:#6aa3ff;
+  --card:#121722; --border:#202636; --btn:#202a3a; --btn2:#2d3850;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font:14px/1.45 Inter,ui-sans-serif,system-ui;
+  color:var(--fg); background:linear-gradient(180deg,#0d1016,#0b0e14 60%,#0d1016);
+  overflow-x: hidden;
+}
+
+#app{ display:flex; min-height:100vh; width:100%; }
+
+.stage{
+  flex:1 1 auto; min-width:0;
+  display:flex; align-items:flex-start; justify-content:center;
+  padding:12px; position:relative; overflow:auto;
+  background:var(--bg);
+}
+
+/* Canvas */
+#preview{
+  display:block;
+  max-width:100%;
+  height:auto;
+  max-height:calc(100vh - 24px);
+  border-radius:12px; background:#0b0e14;
+  border:1px solid var(--border);
+}
+
+/* Right panel */
+.panel{
+  flex: 0 0 var(--panelW);
+  min-width:260px; max-width:560px;
+  padding:18px; background:var(--bg2);
+  border-left:1px solid var(--border); overflow:auto;
+}
+.panel-header{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:6px}
+.panel h1{margin:0; font-size:20px; color:#eaf0ff}
+
+.panel-width{min-width:220px}
+.label{font-size:12px; color:#9fb0ff; margin-bottom:6px}
+.row{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.nowrap{flex-wrap:nowrap}
+.grow{flex:1}
+.mono{font-family:ui-monospace,Menlo,Consolas}
+
+.card{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:14px; margin:10px 0;
+}
+.card h2{
+  margin:0 0 10px; font-size:13px; color:#b9c6ff; text-transform:uppercase; letter-spacing:.08em
+}
+
+.file{display:flex; justify-content:space-between; align-items:center; gap:10px; margin:6px 0}
+.file span{color:var(--muted)}
+.file input{width:180px}
+
+.stack{display:flex; flex-direction:column; gap:6px}
+
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+
+/* Selects / number */
+select, input[type="number"]{
+  background:var(--bg); border:1px solid var(--border); color:var(--fg);
+  padding:6px 8px; border-radius:8px; outline:none;
+}
+
+/* Range */
+input[type="range"]{
+  -webkit-appearance:none; appearance:none;
+  width:100%; margin:0; padding:0; background:transparent; border:none; height:28px;
+}
+input[type="range"]::-webkit-slider-runnable-track{
+  height:6px; background:var(--border); border-radius:999px;
+}
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none;
+  width:14px; height:14px; border-radius:50%; background:var(--brand); border:none;
+  margin-top:-4px;
+}
+input[type="range"]::-moz-range-track{
+  height:6px; background:var(--border); border-radius:999px;
+}
+input[type="range"]::-moz-range-thumb{
+  width:14px; height:14px; border-radius:50%; background:var(--brand); border:none;
+}
+
+/* Buttons */
+.btn{
+  background:var(--btn); color:var(--fg); border:1px solid var(--border);
+  padding:10px 14px; border-radius:10px; cursor:pointer; transition:all .12s;
+}
+.btn:hover{background:var(--btn2)}
+.btn.primary{background:var(--brand); border-color:#5b83ff; color:#0b0e14; font-weight:600}
+.btn.ghost{background:transparent}
+
+.switch{display:flex; align-items:center; gap:8px; color:var(--muted)}
+
+/* Two main buttons + status */
+.actions{
+  display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px
+}
+.actions .btn{width:100%}
+.status{grid-column:1 / -1; color:var(--muted); font-family:ui-monospace,Menlo,Consolas}
+
+/* Legend inside canvas */
+.legend{
+  position:absolute; right:16px; bottom:16px; display:flex; gap:10px; opacity:.75;
+  background:#0b0e14cc; border:1px solid var(--border); padding:6px 10px; border-radius:10px;
+}
+.dot{display:inline-block; width:10px; height:10px; border-radius:999px; margin-right:6px}
+.dot.r{background:var(--red)} .dot.g{background:var(--green)} .dot.b{background:var(--blue)}
+
+/* === ONLY NEW: make “Choose …” look like buttons === */
+.file-btn{
+  display:inline-block;
+  padding:9px 12px;
+  color:var(--fg);
+  background:var(--btn);
+  border:1px solid var(--border);
+  border-radius:10px;
+  cursor:pointer;
+  user-select:none;
+  transition:background .12s, border-color .12s, transform .04s, box-shadow .12s;
+}
+.file-btn:hover{ background:var(--btn2); border-color:#2a3448; }
+.file-btn:active{ transform:translateY(1px); }
+.file-btn:focus-visible{ outline:2px solid var(--brand); outline-offset:2px; }
+.filename{ margin-top:6px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* === PATCH: make "Choose …" clearly look like buttons === */
+label.file-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 12px;
+  background:var(--btn);
+  color:var(--fg);
+  border:1px solid var(--border);
+  border-radius:10px;
+  cursor:pointer;
+  user-select:none;
+  transition:background .12s, border-color .12s, transform .04s, box-shadow .12s;
+}
+
+/* hover / active */
+label.file-btn:hover{ background:var(--btn2); border-color:#2a3448; }
+label.file-btn:active{ transform: translateY(1px); }
+
+/* focus (клавіатура): спрацьовує, коли пов’язаний input у фокусі */
+label.file-btn:has(+ input:focus-visible){
+  outline:2px solid var(--brand);
+  outline-offset:2px;
+}
+
+/* назва обраного файлу під кнопкою */
+.filename{
+  margin-top:6px;
+  color:var(--muted);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
