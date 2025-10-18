@@ -171,7 +171,10 @@ label.file-btn:has(+ input:focus-visible){
   background:#00a592;
   color:#fff;
   border-color:#008a7d; /* subtle border to match the tone */
+  display:inline-flex;
+  align-items:center;
 }
 .btn-export-pp:hover{ filter:brightness(1.06); }
 .btn-export-pp:active{ transform:translateY(1px); }
+
 
