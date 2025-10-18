@@ -40,6 +40,26 @@ let state = {
   opacity: 1.0
 };
 
+/* -------------------------------------------------------------------------- */
+/* Photopea plugin integration (minimal, non-invasive)                        */
+/* -------------------------------------------------------------------------- */
+const LAB_ORIGIN = 'https://pt-home.github.io';
+const CURRENT_SESSION = (() => {
+  const p = new URLSearchParams(location.search).get('sessionId');
+  return p || null; // if null, Lab runs standalone (no plugin)
+})();
+let pluginWin = null; // will store the plugin frame window when LAB_OPEN arrives
+
+// Tiny helper: load image from a blob URL (does not modify existing readImage(file))
+async function readImageFromURL(url){
+  const img = new Image();
+  img.decoding = 'async';
+  img.crossOrigin = 'anonymous';
+  img.src = url;
+  await img.decode();
+  return img;
+}
+
 /* ensure labels exist (in case HTML not updated for some reason) */
 function ensureNameHolder(inputEl, id){
   let el = document.getElementById(id);
@@ -228,6 +248,88 @@ els.swap.addEventListener('click', ()=>{
   else if (topImg) paintSingleImage(topImg);
   else setStatus('Load at least one image.');
 });
+
+/* -------------------------------------------------------------------------- */
+/* Photopea plugin: message listener + export back                            */
+/* -------------------------------------------------------------------------- */
+window.addEventListener('message', async (ev) => {
+  if (!CURRENT_SESSION) return;                 // integration only if launched with ?sessionId
+  if (ev.origin !== LAB_ORIGIN) return;         // security: accept only from our GH Pages origin
+  const msg = ev.data || {};
+  if (!msg || msg.sessionId !== CURRENT_SESSION) return; // ignore foreign sessions
+
+  // Handshake from plugin → reply READY
+  if (msg.type === 'LAB_OPEN') {
+    pluginWin = ev.source;
+    try {
+      pluginWin.postMessage({ type: 'LAB_READY', sessionId: CURRENT_SESSION }, LAB_ORIGIN);
+    } catch (e) {
+      console.warn('Failed to send LAB_READY:', e);
+    }
+    return;
+  }
+
+  // Receive active layer as PNG buffer and route to base / blend
+  if (msg.type === 'LAB_IMAGE' && msg.buffer instanceof ArrayBuffer) {
+    const { seq, role, name, mime } = msg;
+    try {
+      const blob = new Blob([msg.buffer], { type: mime || 'image/png' });
+      const url  = URL.createObjectURL(blob);
+      const img  = await readImageFromURL(url);
+      URL.revokeObjectURL(url);
+
+      if (role === 'base') {
+        baseImg = img;
+        if (els.fileBaseName) els.fileBaseName.textContent = name || 'from Photopea';
+      } else if (role === 'blend' || role === 'top') {
+        topImg = img;
+        if (els.fileTopName) els.fileTopName.textContent = name || 'from Photopea';
+      } else {
+        console.warn('Unknown role in LAB_IMAGE:', role);
+      }
+
+      refreshPreview(); // repaint with new inputs
+
+      // Confirm to plugin that image was applied
+      if (pluginWin) {
+        pluginWin.postMessage({ type: 'LAB_IMAGE_APPLIED', sessionId: CURRENT_SESSION, seq }, LAB_ORIGIN);
+      }
+      setStatus('Image from Photopea applied.');
+    } catch (e) {
+      console.error('LAB_IMAGE handling error:', e);
+      setStatus('Error applying image from Photopea.');
+    }
+    return;
+  }
+});
+
+/* Hook up "Export PNG to Photopea (new document)" button if present */
+const exportToPeaBtn = document.getElementById('exportToPeaBtn');
+if (exportToPeaBtn) {
+  exportToPeaBtn.addEventListener('click', () => {
+    if (!CURRENT_SESSION || !pluginWin) {
+      setStatus('Photopea plugin is not connected. Use local Export PNG.');
+      return;
+    }
+    els.canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const buf = await blob.arrayBuffer();
+      try {
+        pluginWin.postMessage({
+          type: 'LAB_EXPORT',
+          sessionId: CURRENT_SESSION,
+          name: 'BlendLab Result.png',
+          mime: 'image/png',
+          buffer: buf
+        }, LAB_ORIGIN, [buf]); // transfer buffer ownership for performance
+        setStatus('Sent result to Photopea (new document).');
+      } catch (e) {
+        console.error('Failed to post LAB_EXPORT:', e);
+        setStatus('Failed to send result to Photopea.');
+      }
+    }, 'image/png');
+  });
+}
 
 /* Initial status */
 if (location.protocol==='file:'){ setStatus("Heads up: opened via file:// — worker will not start. Use a local server."); }
